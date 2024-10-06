@@ -56,7 +56,7 @@ def add_to_playlist(songs: List[Song]) -> None:
     items = []
     for song in songs:
         if song.uri not in playlist_uris:
-            items.append(song)
+            items.append(song.uri)
 
     if items:
         sp_client.playlist_add_items(SPOTIFY_PLAYLIST_ID, items=items)
@@ -67,7 +67,7 @@ def remove_from_playlist(songs: List[Song]) -> None:
     items = []
     for song in songs:
         if song.uri in playlist_uris:
-            items.append(song)
+            items.append(song.uri)
 
     if items:
         sp_client.playlist_remove_all_occurrences_of_items(SPOTIFY_PLAYLIST_ID, items=items)
