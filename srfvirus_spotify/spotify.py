@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import TYPE_CHECKING, Optional, List
 
 from spotipy import Spotify as SpotifyClient, SpotifyOAuth
@@ -40,6 +41,7 @@ def _get_playlist_uris() -> List[str]:
 
 
 def search_title(*, title: str, artist: str) -> Optional[str]:
+    artist = re.sub("feat.", ",", artist, flags=re.IGNORECASE)
     q = f"{title} {artist}"
     search_results = sp_client.search(q)
 
