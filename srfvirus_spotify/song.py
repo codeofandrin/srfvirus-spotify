@@ -4,7 +4,7 @@ import datetime
 from typing import Dict, Any, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from typing import Self
+    from typing_extensions import Self
 
 
 class Song:
@@ -43,4 +43,4 @@ class Song:
     @classmethod
     def from_storage_dict(cls, *, data: Dict[str, Any], uri: str) -> Self:
         new_data = {"title": data["title"], "artist": {"name": data["artist"]}, "date": ""}
-        return Song(uri=uri, data=new_data, timestamp=data["timestamp"])
+        return cls(uri=uri, data=new_data, timestamp=data["timestamp"])
