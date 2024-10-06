@@ -1,6 +1,6 @@
 import logging
 
-from srfvirus_spotify.spotify import add_to_playlist
+from srfvirus_spotify.spotify import add_to_playlist, remove_from_playlist
 from srfvirus_spotify.srf import SRF
 
 
@@ -14,11 +14,13 @@ logging.basicConfig(
 
 def main() -> None:
     srf = SRF()
-    new_songs = srf.get_new_songs()
-    print(new_songs)
 
-    # for new_song in new_songs:
-    #     add_to_playlist(new_song)
+    # add new songs to playlist
+    new_songs = srf.get_new_songs()
+    add_to_playlist(new_songs)
+    # remove old songs from playlist
+    old_songs = srf.get_old_songs()
+    remove_from_playlist(old_songs)
 
 
 if __name__ == "__main__":
