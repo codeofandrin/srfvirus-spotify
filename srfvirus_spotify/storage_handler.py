@@ -16,19 +16,11 @@ class SongsStorageFileHandler:
     def __init__(self, storage_path: str):
         self._json_file: JSONFile = JSONFile(storage_path)
 
-    # def _get_uid(self, *, title: str, artist: str) -> str:
-    #     formatted = SONG_ENCODE_FORMAT.format(title=title, artist=artist)
-    #     b64_encoded = base64.b64encode(formatted.encode("ascii"))
-    #     b64_string = b64_encoded.decode()
-    #     return b64_string
-
     def set(self, song: Song) -> None:
-        # uid = self._get_uid(title=song.title, artist=song.artist)
         song_info = song.to_dict()
         self._json_file.set(key=song.uri, value=song_info)
 
     def remove(self, song: Song) -> None:
-        # uid = self._get_uid(title=song.title, artist=song.artist)
         self._json_file.delete(song.uri)
 
     def get_all(self) -> List[Song]:
