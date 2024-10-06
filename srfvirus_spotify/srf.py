@@ -169,7 +169,7 @@ class SRF:
 
     def get_old_songs(self) -> List[Song]:
         now = int(time.time())
-        save_time = int(datetime.timedelta(minutes=2).total_seconds())
+        save_time = int(datetime.timedelta(weeks=2).total_seconds())
         songs = self.songs.get_all()
 
         old_songs = []
