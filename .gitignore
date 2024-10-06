@@ -1,0 +1,7 @@
+.env
+logs/*
+.cache/*
+
+# do not ignore
+!.cache/.gitkeep
+!logs/.gitkeep
