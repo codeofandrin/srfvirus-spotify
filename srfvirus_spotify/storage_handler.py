@@ -17,7 +17,7 @@ class SongsStorageFileHandler:
         self._json_file: JSONFile = JSONFile(storage_path)
 
     def set(self, song: Song) -> None:
-        song_info = song.to_dict()
+        song_info = song.to_storage_dict()
         self._json_file.set(key=song.uri, value=song_info)
 
     def remove(self, song: Song) -> None:
@@ -27,7 +27,7 @@ class SongsStorageFileHandler:
         data = self._json_file.read()
         songs = []
         for uri, song_info in data.items():
-            songs.append(Song(data=song_info, uri=uri))
+            songs.append(Song.from_storage_dict(data=song_info, uri=uri))
         return songs
 
 
