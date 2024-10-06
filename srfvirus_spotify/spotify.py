@@ -42,12 +42,12 @@ def search_title(*, title: str, artist: str) -> Optional[str]:
     return track_uri
 
 
-def add_song_to_playlist(song: Song) -> None:
+def add_to_playlist(song: Song) -> None:
     playlist_items = sp_client.playlist_items(SPOTIFY_PLAYLIST_ID)
     if playlist_items:
         playlist_uris = [item["track"]["uri"] for item in playlist_items["items"]]
         if song.uri not in playlist_uris:
             sp_client.playlist_add_items(SPOTIFY_PLAYLIST_ID, items=[song.uri])
 
-def remove_from_playlist(song: Song) -> None:
-    ...
+
+def remove_from_playlist(song: Song) -> None: ...

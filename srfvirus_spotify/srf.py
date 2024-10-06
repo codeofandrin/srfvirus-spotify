@@ -159,7 +159,6 @@ class SRF:
         for song in songs:
             if song.timestamp == last_timestamp:
                 break
-
             new_songs.append(song)
             self.songs.set(song)
 

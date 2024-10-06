@@ -1,6 +1,6 @@
 import logging
 
-from srfvirus_spotify.spotify import add_song_to_playlist
+from srfvirus_spotify.spotify import add_to_playlist
 from srfvirus_spotify.srf import SRF
 
 
@@ -18,7 +18,7 @@ def main() -> None:
     print(new_songs)
 
     # for new_song in new_songs:
-    #     add_song_to_playlist(new_song)
+    #     add_to_playlist(new_song)
 
 
 if __name__ == "__main__":
