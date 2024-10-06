@@ -10,9 +10,10 @@ from srfvirus_spotify.srf import SRF
 logging.basicConfig(
     format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
     datefmt="%H:%M:%S",
-    level=logging.WARNING,
+    level=logging.INFO,
     handlers=[logging.FileHandler("./logs/logging.log"), logging.StreamHandler()],
 )
+logger = logging.getLogger(__name__)
 
 scheduler = BlockingScheduler()
 
@@ -22,10 +23,12 @@ def main():
     srf = SRF()
 
     # add new songs to playlist
+    logger.info("add new songs")
     new_songs = srf.get_new_songs()
     add_to_playlist(new_songs)
 
     # remove old songs from playlist
+    logger.info("remove old songs")
     old_songs = srf.get_old_songs()
     remove_from_playlist(old_songs)
 
