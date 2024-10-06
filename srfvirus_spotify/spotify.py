@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from spotipy import Spotify as SpotifyClient, SpotifyOAuth
 
@@ -30,6 +30,15 @@ sp_client = SpotifyClient(
 )
 
 
+def _get_playlist_uris() -> List[str]:
+    playlist_items = sp_client.playlist_items(SPOTIFY_PLAYLIST_ID)
+    playlist_uris = []
+    if playlist_items:
+        playlist_uris = [item["track"]["uri"] for item in playlist_items["items"]]
+
+    return playlist_uris
+
+
 def search_title(*, title: str, artist: str) -> Optional[str]:
     q = f"{title} {artist}"
     search_results = sp_client.search(q)
@@ -42,12 +51,23 @@ def search_title(*, title: str, artist: str) -> Optional[str]:
     return track_uri
 
 
-def add_to_playlist(song: Song) -> None:
-    playlist_items = sp_client.playlist_items(SPOTIFY_PLAYLIST_ID)
-    if playlist_items:
-        playlist_uris = [item["track"]["uri"] for item in playlist_items["items"]]
+def add_to_playlist(songs: List[Song]) -> None:
+    playlist_uris = _get_playlist_uris()
+    items = []
+    for song in songs:
         if song.uri not in playlist_uris:
-            sp_client.playlist_add_items(SPOTIFY_PLAYLIST_ID, items=[song.uri])
+            items.append(song)
+
+    if items:
+        sp_client.playlist_add_items(SPOTIFY_PLAYLIST_ID, items=items)
 
 
-def remove_from_playlist(song: Song) -> None: ...
+def remove_from_playlist(songs: List[Song]) -> None:
+    playlist_uris = _get_playlist_uris()
+    items = []
+    for song in songs:
+        if song.uri in playlist_uris:
+            items.append(song)
+
+    if items:
+        sp_client.playlist_remove_all_occurrences_of_items(SPOTIFY_PLAYLIST_ID, items=items)
