@@ -1,12 +1,16 @@
 import logging
 import datetime
 
+import sentry_sdk as sentry
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from srfvirus_spotify.spotify import add_to_playlist, remove_from_playlist
 from srfvirus_spotify.srf import SRF
 
 
+sentry.init(
+    dsn="https://03eb4bbe5f7c2db6350bac8fd9804efc@o4508083247382528.ingest.de.sentry.io/4508083270320208"
+)
 logging.basicConfig(
     format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
     datefmt="%H:%M:%S",
