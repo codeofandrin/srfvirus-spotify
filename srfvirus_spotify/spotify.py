@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 SPOTIFY_PLAYLIST_ID = "6c6OWdem6i3ekL60K1SiKu"
-SPOTIFY_SCOPES = "playlist-modify-public"
+SPOTIFY_SCOPES = "playlist-read-private,playlist-modify-private"
 
 
 sp_client = SpotifyClient(
