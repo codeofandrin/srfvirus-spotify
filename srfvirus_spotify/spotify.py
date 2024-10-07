@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 SPOTIFY_PLAYLIST_ID = "6c6OWdem6i3ekL60K1SiKu"
-SPOTIFY_SCOPES = "playlist-read-private,playlist-modify-private"
+SPOTIFY_SCOPES = "playlist-read-private,playlist-modify-private,playlist-modify-public"
 
 
 sp_client = SpotifyClient(
@@ -60,7 +60,9 @@ def add_to_playlist(songs: List[Song]) -> None:
         if song.uri not in playlist_uris:
             items.append(song.uri)
 
+    print(songs, items)
     if items:
+        logger.info("add items to playlist")
         sp_client.playlist_add_items(SPOTIFY_PLAYLIST_ID, items=items)
 
 
