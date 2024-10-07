@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 scheduler = BlockingScheduler()
 
 
-@scheduler.scheduled_job("interval", minutes=20, next_run_time=datetime.datetime.now())
+@scheduler.scheduled_job("interval", minutes=15, next_run_time=datetime.datetime.now())
 def main():
     srf = SRF()
 
