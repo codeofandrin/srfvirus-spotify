@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 SRF_BASE_URL = "https://api.srgssr.ch"
 SRF_OAUTH_BASE_URL = f"{SRF_BASE_URL}/oauth/v1"
 SRF_AUDIO_BASE_URL = f"{SRF_BASE_URL}/audiometadata/v2"
+WAIT_UNTIL_NEXT_SEARCH = 1  # seconds
 
 
 class _SRFClient:
@@ -144,10 +145,24 @@ class SRF:
 
         data = self.client.fetch_song_list(channel_id)
         ret = []
-        for raw_song in data:
-            uri = search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+        for i, raw_song in enumerate(data):
+            try:
+                uri = search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+            except (ConnectionResetError, requests.ConnectionError):
+                logger.warning(
+                    f"ConnectionResetError for search_title at {i=}, retry in {WAIT_UNTIL_NEXT_SEARCH}s"
+                )
+                time.sleep(WAIT_UNTIL_NEXT_SEARCH)
+                try:
+                    uri = search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+                except (ConnectionResetError, requests.ConnectionError):
+                    logger.error(f"ConnectionResetError for search_title at {i=}, abort")
+                    continue
+
             if uri is not None:
                 ret.append(Song(data=raw_song, uri=uri))
+
+            time.sleep(WAIT_UNTIL_NEXT_SEARCH)
 
         return ret
 
