@@ -1,16 +1,20 @@
+from __future__ import annotations
+
 import requests
 import time
 import datetime
 import logging
 from requests.auth import HTTPBasicAuth
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 
 from .env import Env
 from .cache_handler import TokenCacheFileHandler
 from .errors import SRFHTTPException
 from .storage_handler import SongsStorageFileHandler, SongsMetadataFileHandler
 from .song import Song
-from .spotify import search_title
+
+if TYPE_CHECKING:
+    from .spotify import Spotify
 
 
 logger = logging.getLogger(__name__)
@@ -117,7 +121,8 @@ class _SRFClient:
 
 class SRF:
 
-    def __init__(self):
+    def __init__(self, *, spotify: Spotify):
+        self.spotify: Spotify = spotify
         self.client: _SRFClient = _SRFClient(
             client_id=Env.SRF_CLIENT_ID,
             client_secret=Env.SRF_CLIENT_SECRET,
@@ -147,14 +152,16 @@ class SRF:
         ret = []
         for i, raw_song in enumerate(data):
             try:
-                uri = search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+                uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
             except (ConnectionResetError, requests.ConnectionError):
                 logger.warning(
                     f"ConnectionResetError for search_title at {i=}, retry in {WAIT_UNTIL_NEXT_SEARCH}s"
                 )
                 time.sleep(WAIT_UNTIL_NEXT_SEARCH)
                 try:
-                    uri = search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+                    uri = self.spotify.search_title(
+                        title=raw_song["title"], artist=raw_song["artist"]["name"]
+                    )
                 except (ConnectionResetError, requests.ConnectionError):
                     logger.error(f"ConnectionResetError for search_title at {i=}, abort")
                     continue

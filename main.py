@@ -4,7 +4,7 @@ import datetime
 import sentry_sdk as sentry
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from srfvirus_spotify.spotify import add_to_playlist, remove_from_playlist
+from srfvirus_spotify.spotify import Spotify
 from srfvirus_spotify.srf import SRF
 
 ignore_errors = [KeyboardInterrupt]
@@ -25,17 +25,18 @@ scheduler = BlockingScheduler()
 
 @scheduler.scheduled_job("interval", minutes=15, next_run_time=datetime.datetime.now())
 def main():
-    srf = SRF()
+    spotify = Spotify()
+    srf = SRF(spotify=spotify)
 
     # add new songs to playlist
     logger.info("add new songs")
     new_songs = srf.get_new_songs()
-    add_to_playlist(new_songs)
+    spotify.add_to_playlist(new_songs)
 
     # remove old songs from playlist
     logger.info("remove old songs")
     old_songs = srf.get_old_songs()
-    remove_from_playlist(old_songs)
+    spotify.remove_from_playlist(old_songs)
 
 
 if __name__ == "__main__":
