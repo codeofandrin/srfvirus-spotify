@@ -149,7 +149,7 @@ class SRF:
 
         data = self.client.fetch_song_list(channel_id)
         ret = []
-        for i, raw_song in enumerate(data):
+        for raw_song in data:
             uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
 
             if uri is not None:
