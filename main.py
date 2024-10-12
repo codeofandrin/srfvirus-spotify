@@ -30,7 +30,6 @@ def main():
 
     # add new songs to playlist
     new_songs = srf.get_trending_songs()
-    print(new_songs)
     if new_songs:
         spotify.add_to_playlist(new_songs)
 
