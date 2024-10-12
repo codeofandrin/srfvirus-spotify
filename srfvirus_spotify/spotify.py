@@ -52,22 +52,18 @@ class Spotify:
         return track_uri
 
     def add_to_playlist(self, songs: List[Song]) -> None:
-        playlist_uris = self._get_playlist_uris()
         items = []
         for song in songs:
-            if song.uri not in playlist_uris:
-                items.append(song.uri)
+            items.append(song.uri)
 
         if items:
             logger.info("add items to playlist")
             self.client.playlist_add_items(Env.SPOTIFY_PLAYLIST_ID, items=items)
 
     def remove_from_playlist(self, songs: List[Song]) -> None:
-        playlist_uris = self._get_playlist_uris()
         items = []
         for song in songs:
-            if song.uri in playlist_uris:
-                items.append(song.uri)
+            items.append(song.uri)
 
         if items:
             logger.info("remove items from playlist")

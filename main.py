@@ -29,14 +29,15 @@ def main():
     srf = SRF(spotify=spotify)
 
     # add new songs to playlist
-    logger.info("add new songs")
-    new_songs = srf.get_new_songs()
-    spotify.add_to_playlist(new_songs)
+    new_songs = srf.get_trending_songs()
+    print(new_songs)
+    if new_songs:
+        spotify.add_to_playlist(new_songs)
 
     # remove old songs from playlist
-    logger.info("remove old songs")
     old_songs = srf.get_old_songs()
-    spotify.remove_from_playlist(old_songs)
+    if old_songs:
+        spotify.remove_from_playlist(old_songs)
 
 
 if __name__ == "__main__":

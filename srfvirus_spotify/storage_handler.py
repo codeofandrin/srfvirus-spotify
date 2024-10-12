@@ -23,6 +23,13 @@ class SongsStorageFileHandler:
     def remove(self, song: Song) -> None:
         self._json_file.delete(song.uri)
 
+    def get(self, uri: str) -> Optional[Song]:
+        data = self._json_file.get(uri)
+        if data is not None:
+            return Song.from_storage_dict(data=data, uri=uri)
+        else:
+            return None
+
     def get_all(self) -> List[Song]:
         data = self._json_file.read()
         songs = []

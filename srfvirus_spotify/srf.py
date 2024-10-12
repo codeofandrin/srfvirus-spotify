@@ -24,6 +24,9 @@ SRF_BASE_URL = "https://api.srgssr.ch"
 SRF_OAUTH_BASE_URL = f"{SRF_BASE_URL}/oauth/v1"
 SRF_AUDIO_BASE_URL = f"{SRF_BASE_URL}/audiometadata/v2"
 
+TRENDING_SONG_COUNT = 4
+TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
+
 
 class _SRFClient:
 
@@ -153,37 +156,68 @@ class SRF:
             uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
 
             if uri is not None:
-                ret.append(Song(data=raw_song, uri=uri))
+                song = self.songs.get(uri)
+                if song is None:
+                    song = Song(data=raw_song, uri=uri)
+                ret.append(song)
 
             time.sleep(1)
 
         return ret
 
-    def get_new_songs(self) -> List[Song]:
+    def _get_new_songs(self) -> List[Song]:
         songs = self._get_songs()
         last_timestamp = self.songs_metadata.get("last_timestamp")
 
         new_songs = []
         for song in songs:
-            if song.timestamp == last_timestamp:
+            if song.played_at == last_timestamp:
                 break
             new_songs.append(song)
-            self.songs.set(song)
 
         if new_songs:
-            self.songs_metadata.set("last_timestamp", new_songs[0].timestamp)
+            self.songs_metadata.set("last_timestamp", new_songs[0].played_at)
 
         return new_songs
 
-    def get_old_songs(self) -> List[Song]:
+    def _is_past_deadline(self, song: Song) -> bool:
         now = int(time.time())
-        save_time = int(datetime.timedelta(weeks=2).total_seconds())
-        songs = self.songs.get_all()
+        return now >= (song.retained_at + TRENDING_SONG_DEADLINE)
 
+    def get_trending_songs(self) -> List[Song]:
+        logger.info("get trending songs")
+        new_songs = self._get_new_songs()
+
+        ret = []
+        for song in new_songs:
+            # check retention to potentially prevent adding song
+            # that is not played enough
+            if self._is_past_deadline(song):
+                song.count = 0
+
+            song.count += 1
+            # if song reaches specific count, it's a trending song
+            if song.count >= TRENDING_SONG_COUNT:
+                song.count = 0
+                # retain to prevent song being removed later
+                song.retain()
+                if not song.in_playlist:
+                    song.in_playlist = True
+                    ret.append(ret)
+
+            # always update it in storage to update at least played_at timestamp
+            self.songs.set(song)
+
+        return ret
+
+    def get_old_songs(self) -> List[Song]:
+        logger.info("get old songs")
+        songs = self.songs.get_all()
         old_songs = []
         for song in songs:
-            if now >= (song.timestamp + save_time):
-                old_songs.append(song)
+            # if it's past deadline, it wasn't played enough to be retained
+            if song.in_playlist and self._is_past_deadline(song):
                 self.songs.remove(song)
+                old_songs.append(song)
 
         return old_songs
