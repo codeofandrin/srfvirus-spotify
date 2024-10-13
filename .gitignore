@@ -3,6 +3,7 @@ logs/*
 .cache/*
 storage/*
 venv
+__pycache__
 
 # do not ignore
 !.cache/.gitkeep
