@@ -2,6 +2,7 @@
 logs/*
 .cache/*
 storage/*
+venv
 
 # do not ignore
 !.cache/.gitkeep
