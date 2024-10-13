@@ -31,14 +31,6 @@ class Spotify:
             )
         )
 
-    def _get_playlist_uris(self) -> List[str]:
-        playlist_items = self.client.playlist_items(Env.SPOTIFY_PLAYLIST_ID)
-        playlist_uris = []
-        if playlist_items:
-            playlist_uris = [item["track"]["uri"] for item in playlist_items["items"]]
-
-        return playlist_uris
-
     def search_title(self, *, title: str, artist: str) -> Optional[str]:
         artist = re.sub("feat.", ",", artist, flags=re.IGNORECASE)
         q = f"{title} {artist}"
