@@ -203,7 +203,7 @@ class SRF:
                 song.retain()
                 if not song.in_playlist:
                     song.in_playlist = True
-                    ret.append(ret)
+                    ret.append(song)
 
             # always update it in storage to update at least played_at timestamp
             self.songs.set(song)
