@@ -157,7 +157,9 @@ class SRF:
 
             if uri is not None:
                 song = self.songs.get(uri)
-                if song is None:
+                if song is not None:
+                    song._date = raw_song["date"]
+                else:
                     song = Song(data=raw_song, uri=uri)
                 ret.append(song)
 
