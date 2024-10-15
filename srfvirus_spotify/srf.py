@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 SRF_BASE_URL = "https://api.srgssr.ch"
 SRF_OAUTH_BASE_URL = f"{SRF_BASE_URL}/oauth/v1"
 SRF_AUDIO_BASE_URL = f"{SRF_BASE_URL}/audiometadata/v2"
+SRF_VIRUS_CHANNEL_ID = "66815fe2-9008-4853-80a5-f9caaffdf3a9"
 
 TRENDING_SONG_COUNT = 4
 TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
@@ -145,12 +146,7 @@ class SRF:
         return result
 
     def _get_songs(self) -> List[Song]:
-        query = "virus"
-        channel_id = self._search_channel(query)
-        if channel_id is None:
-            raise ValueError(f"channel with query '{query}' not found")
-
-        data = self.client.fetch_song_list(channel_id)
+        data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
         ret = []
         for raw_song in data:
             uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
