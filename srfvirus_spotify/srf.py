@@ -134,16 +134,22 @@ class SRF:
         self.songs = SongsStorageFileHandler("./storage/songs.json")
         self.songs_metadata = SongsMetadataFileHandler("./storage/songs_metadata.json")
 
-    def _get_songs(self) -> List[Song]:
+    def _get_new_songs(self) -> List[Song]:
         data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
-        ret = []
-        for raw_song in data:
-            uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+        last_timestamp = self.songs_metadata.get("last_timestamp")
 
+        new_songs = []
+        for raw_song in data:
+            # check timestamp first to not search songs that are
+            # redundant from last request (and therefore not needed)
+            dt = datetime.datetime.fromisoformat(raw_song["date"])
+            played_at = int(dt.timestamp())
+            if played_at == last_timestamp:
+                break
+
+            uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
             if uri is not None:
                 song = self.songs.get(uri)
-                dt = datetime.datetime.fromisoformat(raw_song["date"])
-                played_at = int(dt.timestamp())
 
                 if song is not None:
                     song.played_at = played_at
@@ -154,21 +160,9 @@ class SRF:
                         artist=raw_song["artist"]["name"],
                         played_at=played_at,
                     )
-                ret.append(song)
+                new_songs.append(song)
 
             time.sleep(1)
-
-        return ret
-
-    def _get_new_songs(self) -> List[Song]:
-        songs = self._get_songs()
-        last_timestamp = self.songs_metadata.get("last_timestamp")
-
-        new_songs = []
-        for song in songs:
-            if song.played_at == last_timestamp:
-                break
-            new_songs.append(song)
 
         if new_songs:
             self.songs_metadata.set("last_timestamp", new_songs[0].played_at)
