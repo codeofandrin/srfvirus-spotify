@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 from typing import Dict, Any, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
@@ -13,17 +12,17 @@ class Song:
         self,
         *,
         uri: str,
-        data: Dict[str, Any],
-        played_at: Optional[int] = None,
+        title: str,
+        artist: str,
+        played_at: int,
         retained_at: Optional[int] = None,
         count: int = 0,
         in_playlist: bool = False,
     ):
         self.uri: str = uri
-        self.title: str = data["title"]
-        self.artist: str = data["artist"]["name"]
-        self._date: str = data["date"]
-        self._played_at: Optional[int] = played_at
+        self.title: str = title
+        self.artist: str = artist
+        self.played_at: int = played_at
         self.count: int = count
         self.in_playlist: bool = in_playlist
         self.retained_at: int
@@ -42,16 +41,6 @@ class Song:
         joined = " ".join([f"{k}={v!r}" for k, v in attrs])
         return f"<Song {joined}>"
 
-    @property
-    def played_at(self) -> int:
-        if self._played_at is None:
-            dt = datetime.datetime.fromisoformat(self._date)
-            played_at = int(dt.timestamp())
-        else:
-            played_at = self._played_at
-
-        return played_at
-
     def to_storage_dict(self) -> Dict[str, Any]:
         ret = {
             "title": self.title,
@@ -65,10 +54,10 @@ class Song:
 
     @classmethod
     def from_storage_dict(cls, *, data: Dict[str, Any], uri: str) -> Self:
-        new_data = {"title": data["title"], "artist": {"name": data["artist"]}, "date": ""}
         return cls(
             uri=uri,
-            data=new_data,
+            title=data["title"],
+            artist=data["artist"],
             played_at=data["played_at"],
             retained_at=data["retained_at"],
             count=data["count"],

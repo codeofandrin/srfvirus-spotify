@@ -157,10 +157,18 @@ class SRF:
 
             if uri is not None:
                 song = self.songs.get(uri)
+                dt = datetime.datetime.fromisoformat(raw_song["date"])
+                played_at = int(dt.timestamp())
+
                 if song is not None:
-                    song._date = raw_song["date"]
+                    song.played_at = played_at
                 else:
-                    song = Song(data=raw_song, uri=uri)
+                    song = Song(
+                        uri=uri,
+                        title=raw_song["title"],
+                        artist=raw_song["artist"]["name"],
+                        played_at=played_at,
+                    )
                 ret.append(song)
 
             time.sleep(1)
