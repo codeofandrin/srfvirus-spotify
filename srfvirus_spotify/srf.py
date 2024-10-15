@@ -134,17 +134,6 @@ class SRF:
         self.songs = SongsStorageFileHandler("./storage/songs.json")
         self.songs_metadata = SongsMetadataFileHandler("./storage/songs_metadata.json")
 
-    def _search_channel(self, q: str) -> Optional[str]:
-        channels = self.client.fetch_radio_channels()
-
-        result: Optional[str] = None
-        for channel in channels:
-            if q.lower() in channel["title"].lower():
-                result = channel["id"]
-                break
-
-        return result
-
     def _get_songs(self) -> List[Song]:
         data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
         ret = []
