@@ -27,7 +27,7 @@ class Spotify:
                 client_secret=Env.SPOTIFY_CLIENT_SECRET,
                 redirect_uri="http://example.com",
                 scope=self.SCOPES,
-                cache_handler=TokenCacheFileHandler("./.cache/.cache_spotify"),
+                cache_handler=TokenCacheFileHandler("./.cache/.spotify_token"),
             )
         )
 

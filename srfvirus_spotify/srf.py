@@ -128,7 +128,7 @@ class SRF:
         self.client: _SRFClient = _SRFClient(
             client_id=Env.SRF_CLIENT_ID,
             client_secret=Env.SRF_CLIENT_SECRET,
-            cache_handler=TokenCacheFileHandler("./.cache/.cache_srf"),
+            cache_handler=TokenCacheFileHandler("./.cache/.srf_token"),
         )
         self.songs = SongsStorageFileHandler("./storage/songs.json")
         self.songs_metadata = SongsMetadataFileHandler("./storage/songs_metadata.json")
