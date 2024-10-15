@@ -29,8 +29,8 @@ on the SRF Virus radio channel as well as the Spotify Web API to maintain the pl
 The application follows these steps:
 
 1. Get songs from the SRGSSR Audio API
-2. Search songs on Spotify to get URI (song identifier)
-3. Filter out songs received from the SRGSSR Audio API that are redundant from the last request
+2. Filter out songs received from the SRGSSR Audio API that are redundant from the last request
+3. Search filtered songs on Spotify to get URI (song identifier)
 4. Check if song is played enough and add/retain it in playlist, if check passed
 5. Remove songs that aren't played enough from playlist
 
