@@ -25,7 +25,7 @@ SRF_OAUTH_BASE_URL = f"{SRF_BASE_URL}/oauth/v1"
 SRF_AUDIO_BASE_URL = f"{SRF_BASE_URL}/audiometadata/v2"
 SRF_VIRUS_CHANNEL_ID = "66815fe2-9008-4853-80a5-f9caaffdf3a9"
 
-TRENDING_SONG_COUNT = 4
+TRENDING_SONG_COUNT = 3
 TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
 
 
