@@ -18,8 +18,8 @@
 
 The playlist consists of current trending songs that are played on the SRF Virus radio channel. 
 
-The application adds songs to the playlist that are played at least four times within a week on SRF Virus. 
-If a song is not played at least four times during the following week, it will be removed from the playlist.
+The application adds songs to the playlist that are played at least three times within a week on SRF Virus. 
+If a song is not played at least three times during the following week, it will be removed from the playlist.
 
 ## Application Flow
 
