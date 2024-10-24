@@ -12,6 +12,7 @@ class JSONFile:
     def __init__(self, path: str):
         self.path: str = path
         if not os.path.exists(self.path):
+            os.makedirs(os.path.dirname(self.path), exist_ok=True)
             with open(self.path, "w") as f:
                 f.write("{}")
 

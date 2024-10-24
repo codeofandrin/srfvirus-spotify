@@ -1,5 +1,6 @@
 import logging
 import datetime
+import os
 
 import sentry_sdk as sentry
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -18,11 +19,16 @@ def setup() -> None:
         dsn=Env.SENTRY_DSN,
         ignore_errors=ignore_errors,
     )
+
+    log_path = "./logs/logging.log"
+    if not os.path.exists(log_path):
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
     logging.basicConfig(
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
         datefmt="%d.%m.%y %H:%M:%S %Z",
         level=logging.INFO,
-        handlers=[logging.FileHandler("./logs/logging.log"), logging.StreamHandler()],
+        handlers=[logging.FileHandler(log_path), logging.StreamHandler()],
     )
 
 
