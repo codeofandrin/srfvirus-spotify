@@ -6,10 +6,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from srfvirus_spotify.spotify import Spotify
 from srfvirus_spotify.srf import SRF
+from srfvirus_spotify.env import Env
 
 ignore_errors = [KeyboardInterrupt]
 sentry.init(
-    dsn="https://03eb4bbe5f7c2db6350bac8fd9804efc@o4508083247382528.ingest.de.sentry.io/4508083270320208",
+    dsn=Env.SENTRY_DSN,
     ignore_errors=ignore_errors,
 )
 logging.basicConfig(
