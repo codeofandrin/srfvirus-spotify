@@ -192,7 +192,7 @@ class TrendingNowCollection(SongCollection):
         data = self._srf.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
         last_timestamp = self.metadata.get("last_timestamp")
 
-        new_songs = []
+        songs = []
         for raw_song in data:
             # check timestamp first to not search songs that are
             # redundant from last request (and therefore not needed)
@@ -214,14 +214,14 @@ class TrendingNowCollection(SongCollection):
                         artist=raw_song["artist"]["name"],
                         played_at=played_at,
                     )
-                new_songs.append(song)
+                songs.append(song)
 
             time.sleep(1)
 
-        if new_songs:
-            self.metadata.set("last_timestamp", new_songs[0].played_at)
+        if songs:
+            self.metadata.set("last_timestamp", songs[0].played_at)
 
-        return new_songs
+        return songs
 
     def _is_past_deadline(self, song: Song) -> bool:
         now = int(time.time())
