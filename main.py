@@ -25,12 +25,13 @@ SOFTWARE.
 import logging
 import datetime
 import os
+from typing import TYPE_CHECKING, List
 
 import sentry_sdk as sentry
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from srfvirus_spotify.spotify import Spotify
-from srfvirus_spotify.srf import SRF
+from srfvirus_spotify.srf import SRF, TrendingNowCollection
 from srfvirus_spotify.env import Env
 
 
@@ -61,18 +62,18 @@ scheduler = BlockingScheduler()
 
 @scheduler.scheduled_job("interval", minutes=15, next_run_time=datetime.datetime.now())
 def main():
+    srf = SRF()
     spotify = Spotify()
-    srf = SRF(spotify=spotify)
+    trending_now = TrendingNowCollection(srf=srf, spotify=spotify)
 
-    # add new songs to playlist
-    new_songs = srf.get_trending_songs()
-    if new_songs:
-        spotify.add_to_playlist(new_songs)
+    for collection in [trending_now]:
+        new_songs = collection.get_new_songs()
+        if new_songs:
+            collection.playlist.add_songs(new_songs)
 
-    # remove old songs from playlist
-    old_songs = srf.get_old_songs()
-    if old_songs:
-        spotify.remove_from_playlist(old_songs)
+        old_songs = collection.get_old_songs()
+        if old_songs:
+            collection.playlist.remove_songs(old_songs)
 
 
 if __name__ == "__main__":

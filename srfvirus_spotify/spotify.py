@@ -67,20 +67,28 @@ class Spotify:
 
         return track_uri
 
-    def add_to_playlist(self, songs: List[Song]) -> None:
+
+class SpotifyPlaylist:
+
+    def __init__(self, *, client: SpotifyClient, id: str, name: str):
+        self._client: SpotifyClient = client
+        self.id: str = id
+        self.name: str = name
+
+    def add_songs(self, songs: List[Song]) -> None:
         items = []
         for song in songs:
             items.append(song.uri)
 
         if items:
-            logger.info("add items to playlist")
-            self.client.playlist_add_items(Env.SPOTIFY_PLAYLIST_ID, items=items)
+            logger.info(f"add items to playlist '{self.name.replace('_', ' ')}'")
+            self._client.playlist_add_items(self.id, items=items)
 
-    def remove_from_playlist(self, songs: List[Song]) -> None:
+    def remove_songs(self, songs: List[Song]) -> None:
         items = []
         for song in songs:
             items.append(song.uri)
 
         if items:
-            logger.info("remove items from playlist")
-            self.client.playlist_remove_all_occurrences_of_items(Env.SPOTIFY_PLAYLIST_ID, items=items)
+            logger.info(f"remove items from playlist '{self.name.replace('_', ' ')}'")
+            self._client.playlist_remove_all_occurrences_of_items(self.id, items=items)

@@ -36,6 +36,7 @@ from .cache_handler import TokenCacheFileHandler
 from .errors import SRFHTTPException
 from .storage_handler import SongsStorageFileHandler, SongsMetadataFileHandler
 from .song import Song
+from .spotify import SpotifyPlaylist
 
 if TYPE_CHECKING:
     from .spotify import Spotify
@@ -48,9 +49,6 @@ SRF_BASE_URL = "https://api.srgssr.ch"
 SRF_OAUTH_BASE_URL = f"{SRF_BASE_URL}/oauth/v1"
 SRF_AUDIO_BASE_URL = f"{SRF_BASE_URL}/audiometadata/v2"
 SRF_VIRUS_CHANNEL_ID = "66815fe2-9008-4853-80a5-f9caaffdf3a9"
-
-TRENDING_SONG_COUNT = 3
-TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
 
 
 class _SRFClient:
@@ -148,19 +146,51 @@ class _SRFClient:
 
 class SRF:
 
-    def __init__(self, *, spotify: Spotify):
-        self.spotify: Spotify = spotify
+    def __init__(self):
         self.client: _SRFClient = _SRFClient(
             client_id=Env.SRF_CLIENT_ID,
             client_secret=Env.SRF_CLIENT_SECRET,
             cache_handler=TokenCacheFileHandler("./.cache/.srf_token"),
         )
-        self.songs = SongsStorageFileHandler("./storage/songs.json")
-        self.songs_metadata = SongsMetadataFileHandler("./storage/songs_metadata.json")
 
-    def _get_new_songs(self) -> List[Song]:
-        data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
-        last_timestamp = self.songs_metadata.get("last_timestamp")
+
+class SongCollection:
+
+    def __init__(self, *, srf: SRF, spotify: Spotify, playlist_id: str, name: str):
+        self._srf: SRF = srf
+        self._spotify: Spotify = spotify
+        self.playlist = SpotifyPlaylist(client=self._spotify.client, id=playlist_id, name=name)
+        self.songs: SongsStorageFileHandler = SongsStorageFileHandler(f"./storage/songs_{name}.json")
+        self.metadata: SongsMetadataFileHandler = SongsMetadataFileHandler(
+            f"./storage/songs_{name}_metadata.json"
+        )
+
+    def _get_songs(self) -> List[Song]:
+        raise NotImplementedError
+
+    def get_new_songs(self) -> List[Song]:
+        raise NotImplementedError
+
+    def get_old_songs(self) -> List[Song]:
+        raise NotImplementedError
+
+
+class TrendingNowCollection(SongCollection):
+
+    TRENDING_SONG_COUNT = 3
+    TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
+
+    def __init__(self, *, srf: SRF, spotify: Spotify):
+        super().__init__(
+            srf=srf,
+            spotify=spotify,
+            playlist_id=Env.SPOTIFY_TRENDING_NOW_PLAYLIST_ID,
+            name="trending_now",
+        )
+
+    def _get_songs(self) -> List[Song]:
+        data = self._srf.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
+        last_timestamp = self.metadata.get("last_timestamp")
 
         new_songs = []
         for raw_song in data:
@@ -171,7 +201,7 @@ class SRF:
             if played_at == last_timestamp:
                 break
 
-            uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+            uri = self._spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
             if uri is not None:
                 song = self.songs.get(uri)
 
@@ -189,17 +219,17 @@ class SRF:
             time.sleep(1)
 
         if new_songs:
-            self.songs_metadata.set("last_timestamp", new_songs[0].played_at)
+            self.metadata.set("last_timestamp", new_songs[0].played_at)
 
         return new_songs
 
     def _is_past_deadline(self, song: Song) -> bool:
         now = int(time.time())
-        return now >= (song.retained_at + TRENDING_SONG_DEADLINE)
+        return now >= (song.retained_at + self.TRENDING_SONG_DEADLINE)
 
-    def get_trending_songs(self) -> List[Song]:
-        logger.info("get trending songs")
-        new_songs = self._get_new_songs()
+    def get_new_songs(self) -> List[Song]:
+        logger.info("get new songs for 'trending now'")
+        new_songs = self._get_songs()
 
         ret = []
         for song in new_songs:
@@ -210,7 +240,7 @@ class SRF:
 
             song.count += 1
             # if song reaches specific count, it's a trending song
-            if song.count >= TRENDING_SONG_COUNT:
+            if song.count >= self.TRENDING_SONG_COUNT:
                 song.count = 0
                 # retain to prevent song being removed later
                 song.retain()
@@ -224,7 +254,7 @@ class SRF:
         return ret
 
     def get_old_songs(self) -> List[Song]:
-        logger.info("get old songs")
+        logger.info("get old songs for 'trending now'")
         songs = self.songs.get_all()
         old_songs = []
         for song in songs:
