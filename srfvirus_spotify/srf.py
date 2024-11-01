@@ -263,3 +263,46 @@ class TrendingNowCollection(SongCollection):
                 old_songs.append(song)
 
         return old_songs
+
+
+class Top100Collection(SongCollection):
+
+    def __init__(self, *, srf: SRF):
+        super().__init__(
+            srf=srf,
+            playlist_id=Env.SPOTIFY_TOP_100_PLAYLIST_ID,
+            name="top_100",
+        )
+
+    def _get_all_songs(self) -> List[Song]:
+        return list(reversed(sorted(self.songs.get_all(), key=lambda x: x.count)))
+
+    def get_new_songs(self) -> List[Song]:
+        logger.info("get new songs for 'top 100'")
+
+        for song in self._get_songs():
+            song.count += 1
+            self.songs.set(song)
+
+        all_songs = self._get_all_songs()
+        new_songs = []
+        for song in all_songs[:100]:
+            if not song.in_playlist:
+                song.in_playlist = True
+                self.songs.set(song)
+                new_songs.append(song)
+
+        return new_songs
+
+    def get_old_songs(self) -> List[Song]:
+        logger.info("get old songs for 'top 100'")
+
+        all_songs = self._get_all_songs()
+        old_songs = []
+        for song in all_songs[100:]:
+            if song.in_playlist:
+                song.in_playlist = False
+                self.songs.set(song)
+                old_songs.append(song)
+
+        return old_songs
