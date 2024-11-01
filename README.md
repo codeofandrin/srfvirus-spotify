@@ -26,7 +26,7 @@ This playlist consists of current trending songs that are played on the SRF Viru
 The application adds songs to the playlist that are played at least three times within a week on SRF Virus. 
 If a song is not played at least three times during the following week, it will be removed from the playlist.
 
-### Top 100
+### SRF Virus: Top 100
 This playlist consists of current top 100 most played songs on the SRF Virus radio channel.
 
 The application increments the count of a song every time it's played. Then it's sorted by counts
