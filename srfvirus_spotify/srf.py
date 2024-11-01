@@ -213,8 +213,8 @@ class SongCollection:
 
 class TrendingNowCollection(SongCollection):
 
-    TRENDING_SONG_COUNT = 3
-    TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
+    REQUIRED_SONG_COUNT = 3
+    SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
 
     def __init__(self, *, srf: SRF):
         super().__init__(
@@ -225,7 +225,7 @@ class TrendingNowCollection(SongCollection):
 
     def _is_past_deadline(self, song: Song) -> bool:
         now = int(time.time())
-        return now >= (song.retained_at + self.TRENDING_SONG_DEADLINE)
+        return now >= (song.retained_at + self.SONG_DEADLINE)
 
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'trending now'")
@@ -239,7 +239,7 @@ class TrendingNowCollection(SongCollection):
 
             song.count += 1
             # if song reaches specific count, it's a trending song
-            if song.count >= self.TRENDING_SONG_COUNT:
+            if song.count >= self.REQUIRED_SONG_COUNT:
                 song.count = 0
                 # retain to prevent song being removed later
                 song.retain()
