@@ -63,8 +63,7 @@ scheduler = BlockingScheduler()
 @scheduler.scheduled_job("interval", minutes=15, next_run_time=datetime.datetime.now())
 def main():
     srf = SRF()
-    spotify = Spotify()
-    trending_now = TrendingNowCollection(srf=srf, spotify=spotify)
+    trending_now = TrendingNowCollection(srf=srf)
 
     for collection in [trending_now]:
         new_songs = collection.get_new_songs()

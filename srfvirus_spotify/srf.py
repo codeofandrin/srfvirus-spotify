@@ -29,17 +29,14 @@ import time
 import datetime
 import logging
 from requests.auth import HTTPBasicAuth
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Any, Optional
 
 from .env import Env
 from .cache_handler import TokenCacheFileHandler
 from .errors import SRFHTTPException
 from .storage_handler import SongsStorageFileHandler, SongsMetadataFileHandler
 from .song import Song
-from .spotify import SpotifyPlaylist
-
-if TYPE_CHECKING:
-    from .spotify import Spotify
+from .spotify import SpotifyPlaylist, Spotify
 
 
 logger = logging.getLogger(__name__)
@@ -152,21 +149,60 @@ class SRF:
             client_secret=Env.SRF_CLIENT_SECRET,
             cache_handler=TokenCacheFileHandler("./.cache/.srf_token"),
         )
+        self.spotify: Spotify = Spotify()
+        self.metadata: SongsMetadataFileHandler = SongsMetadataFileHandler(f"./storage/songs_metadata.json")
+        self.current_songs: List[Song] = self._get_current_songs()
+
+    def _get_current_songs(self) -> List[Song]:
+        data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
+        last_timestamp = self.metadata.get("last_timestamp")
+
+        songs = []
+        for raw_song in data:
+            # check timestamp first to not search songs that are
+            # redundant from last request (and therefore not needed)
+            dt = datetime.datetime.fromisoformat(raw_song["date"])
+            played_at = int(dt.timestamp())
+            if played_at == last_timestamp:
+                break
+
+            uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+            if uri is not None:
+                song = Song(
+                    uri=uri,
+                    title=raw_song["title"],
+                    artist=raw_song["artist"]["name"],
+                    played_at=played_at,
+                )
+                songs.append(song)
+
+            time.sleep(1)
+
+        if songs:
+            self.metadata.set("last_timestamp", songs[0].played_at)
+
+        return songs
 
 
 class SongCollection:
 
-    def __init__(self, *, srf: SRF, spotify: Spotify, playlist_id: str, name: str):
+    def __init__(self, *, srf: SRF, playlist_id: str, name: str):
         self._srf: SRF = srf
-        self._spotify: Spotify = spotify
-        self.playlist = SpotifyPlaylist(client=self._spotify.client, id=playlist_id, name=name)
+        self.playlist = SpotifyPlaylist(client=self._srf.spotify.client, id=playlist_id, name=name)
         self.songs: SongsStorageFileHandler = SongsStorageFileHandler(f"./storage/songs_{name}.json")
-        self.metadata: SongsMetadataFileHandler = SongsMetadataFileHandler(
-            f"./storage/songs_{name}_metadata.json"
-        )
 
     def _get_songs(self) -> List[Song]:
-        raise NotImplementedError
+        songs = []
+        for current_song in self._srf.current_songs:
+            # check if song is already stored
+            stored_song = self.songs.get(current_song.uri)
+            if stored_song is not None:
+                stored_song.played_at = current_song.played_at
+                songs.append(stored_song)
+            else:
+                songs.append(current_song)
+
+        return songs
 
     def get_new_songs(self) -> List[Song]:
         raise NotImplementedError
@@ -180,48 +216,12 @@ class TrendingNowCollection(SongCollection):
     TRENDING_SONG_COUNT = 3
     TRENDING_SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
 
-    def __init__(self, *, srf: SRF, spotify: Spotify):
+    def __init__(self, *, srf: SRF):
         super().__init__(
             srf=srf,
-            spotify=spotify,
             playlist_id=Env.SPOTIFY_TRENDING_NOW_PLAYLIST_ID,
             name="trending_now",
         )
-
-    def _get_songs(self) -> List[Song]:
-        data = self._srf.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
-        last_timestamp = self.metadata.get("last_timestamp")
-
-        songs = []
-        for raw_song in data:
-            # check timestamp first to not search songs that are
-            # redundant from last request (and therefore not needed)
-            dt = datetime.datetime.fromisoformat(raw_song["date"])
-            played_at = int(dt.timestamp())
-            if played_at == last_timestamp:
-                break
-
-            uri = self._spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
-            if uri is not None:
-                song = self.songs.get(uri)
-
-                if song is not None:
-                    song.played_at = played_at
-                else:
-                    song = Song(
-                        uri=uri,
-                        title=raw_song["title"],
-                        artist=raw_song["artist"]["name"],
-                        played_at=played_at,
-                    )
-                songs.append(song)
-
-            time.sleep(1)
-
-        if songs:
-            self.metadata.set("last_timestamp", songs[0].played_at)
-
-        return songs
 
     def _is_past_deadline(self, song: Song) -> bool:
         now = int(time.time())
@@ -229,10 +229,9 @@ class TrendingNowCollection(SongCollection):
 
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'trending now'")
-        new_songs = self._get_songs()
 
-        ret = []
-        for song in new_songs:
+        new_songs = []
+        for song in self._get_songs():
             # check retention to potentially prevent adding song
             # that is not played enough
             if self._is_past_deadline(song):
@@ -246,12 +245,12 @@ class TrendingNowCollection(SongCollection):
                 song.retain()
                 if not song.in_playlist:
                     song.in_playlist = True
-                    ret.append(song)
+                    new_songs.append(song)
 
             # always update it in storage to update at least played_at timestamp
             self.songs.set(song)
 
-        return ret
+        return new_songs
 
     def get_old_songs(self) -> List[Song]:
         logger.info("get old songs for 'trending now'")
