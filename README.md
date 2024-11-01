@@ -29,8 +29,8 @@ If a song is not played at least three times during the following week, it will 
 ### SRF Virus: Top 100
 This playlist consists of current top 100 most played songs on the SRF Virus radio channel.
 
-The application increments the count of a song every time it's played. Then it's sorted by counts
-and the songs in the top 100 that aren't in the playlist yet are added. Every song beyond the top 100
+The application increments the count of a song every time it's played. Then it sorts the songs by count
+and those in the top 100 that aren't in the playlist yet are added. Every song beyond the top 100
 is removed, if it's in the playlist.
 
 ## Application Flow
