@@ -30,7 +30,7 @@ import time
 import sentry_sdk as sentry
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from srfvirus_spotify.srf import SRF, TrendingNowCollection, Top100Collection
+from srfvirus_spotify.srf import SRF, TrendingNowCollection, Top100Collection, NightOutCollection
 from srfvirus_spotify.env import Env
 
 
@@ -64,8 +64,9 @@ def main():
     srf = SRF()
     trending_now = TrendingNowCollection(srf=srf)
     top_100 = Top100Collection(srf=srf)
+    night_out = NightOutCollection(srf=srf)
 
-    for collection in [trending_now, top_100]:
+    for collection in [trending_now, top_100, night_out]:
         new_songs = collection.get_new_songs()
         if new_songs:
             collection.playlist.add_songs(new_songs)

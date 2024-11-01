@@ -30,6 +30,7 @@ import datetime
 import logging
 from requests.auth import HTTPBasicAuth
 from typing import List, Dict, Any, Optional
+from zoneinfo import ZoneInfo
 
 from .env import Env
 from .cache_handler import TokenCacheFileHandler
@@ -303,6 +304,60 @@ class Top100Collection(SongCollection):
             if song.in_playlist:
                 song.in_playlist = False
                 self.songs.set(song)
+                old_songs.append(song)
+
+        return old_songs
+
+
+class NightOutCollection(SongCollection):
+
+    SONG_DEADLINE = int(datetime.timedelta(weeks=3).total_seconds())
+
+    def __init__(self, srf: SRF):
+        super().__init__(
+            srf=srf,
+            playlist_id=Env.SPOTIFY_NIGHT_OUT_PLAYLIST_ID,
+            name="night_out",
+        )
+
+    def _is_past_deadline(self, song: Song) -> bool:
+        now = int(time.time())
+        return now >= (song.retained_at + self.SONG_DEADLINE)
+
+    def _is_night_out(self) -> bool:
+        tz = ZoneInfo("Europe/Zurich")
+        now = datetime.datetime.now(tz)
+        return now.isoweekday() == 6 and now.hour >= 20
+
+    def get_new_songs(self) -> List[Song]:
+        logger.info("get new songs for 'night out'")
+
+        new_songs = []
+        if self._is_night_out():
+            for song in self._get_songs():
+                tz = ZoneInfo("Europe/Zurich")
+                played_at = datetime.datetime.fromtimestamp(song.played_at).astimezone(tz)
+                if played_at.hour >= 20:
+                    # retain to prevent song being removed later
+                    song.retain()
+                    if not song.in_playlist:
+                        song.in_playlist = True
+                        new_songs.append(song)
+
+                    # always update it in storage to update at least played_at timestamp
+                    self.songs.set(song)
+
+        return new_songs
+
+    def get_old_songs(self) -> List[Song]:
+        logger.info("get old songs for 'night out'")
+
+        songs = self.songs.get_all()
+        old_songs = []
+        for song in songs:
+            # if it's past deadline, it wasn't played enough to be retained
+            if song.in_playlist and self._is_past_deadline(song):
+                self.songs.remove(song)
                 old_songs.append(song)
 
         return old_songs
