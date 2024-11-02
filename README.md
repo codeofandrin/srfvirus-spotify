@@ -17,6 +17,7 @@
 There are following playlists this application maintains:
 - [SRF Virus: Trending Now](https://open.spotify.com/playlist/6c6OWdem6i3ekL60K1SiKu)
 - [SRF Virus: Top 100](https://open.spotify.com/playlist/0LeU6iPYgFSEJKIDpzOo3k)
+- [SRF Virus: Night Out](https://open.spotify.com/playlist/4By2u7VJKKvSwVRXQZ1UnN)
 
 Read more below.
 
@@ -32,6 +33,13 @@ This playlist consists of current top 100 most played songs on the SRF Virus rad
 The application increments the count of a song every time it's played. Then it sorts the songs by count
 and those in the top 100 that aren't in the playlist yet are added. Every song beyond the top 100
 is removed, if it's in the playlist.
+
+### SRF Virus: Night Out
+This playlist consists of current songs that are played on the SRF Virus radio channel during the 
+"Night Out" program. The "Night Out" songs are played on Saturday between 08:00 and 23:59 p.m (CET).
+
+The application adds songs to the playlist that are played at least once within three weeks.
+If a song is not played at least once in during the next three weeks, it will be removed from the playlist.
 
 ## Application Flow
 
