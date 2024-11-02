@@ -28,6 +28,7 @@ import requests
 import time
 import datetime
 import logging
+import copy
 from requests.auth import HTTPBasicAuth
 from typing import List, Dict, Any, Optional
 from zoneinfo import ZoneInfo
@@ -191,10 +192,11 @@ class SongCollection:
         self._srf: SRF = srf
         self.playlist = SpotifyPlaylist(client=self._srf.spotify.client, id=playlist_id, name=name)
         self.songs: SongsStorageFileHandler = SongsStorageFileHandler(f"./storage/songs_{name}.json")
+        self.current_songs: List[Song] = copy.deepcopy(self._srf.current_songs)
 
     def _get_current_songs(self) -> List[Song]:
         songs = []
-        for current_song in self._srf.current_songs:
+        for current_song in self.current_songs:
             # check if song is already stored
             stored_song = self.songs.get(current_song.uri)
             if stored_song is not None:
