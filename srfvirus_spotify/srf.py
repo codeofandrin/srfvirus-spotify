@@ -268,6 +268,8 @@ class TrendingNowCollection(SongCollection):
 
 class Top100Collection(SongCollection):
 
+    SONG_DEADLINE = int(datetime.timedelta(weeks=2).total_seconds())
+
     def __init__(self, *, srf: SRF):
         super().__init__(
             srf=srf,
@@ -275,7 +277,7 @@ class Top100Collection(SongCollection):
             name="top_100",
         )
 
-    def _get_all_songs(self) -> List[Song]:
+    def _get_sorted_all_songs(self) -> List[Song]:
         songs = self.songs.get_all()
         # sort by ...
         # 1. count, high to low
@@ -285,16 +287,27 @@ class Top100Collection(SongCollection):
 
         return songs
 
+    def _is_past_deadline(self, song: Song) -> bool:
+        now = int(time.time())
+        return now >= (song.retained_at + self.SONG_DEADLINE)
+
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'top 100'")
 
         for song in self._get_songs():
+            # check retention to potentially prevent adding song
+            # that is not played enough
+            if self._is_past_deadline(song):
+                song.count = 0
+
             song.count += 1
+            # retain to prevent song being removed later
+            song.retain()
             self.songs.set(song)
 
-        all_songs = self._get_all_songs()
+        sorted_all_songs = self._get_sorted_all_songs()
         new_songs = []
-        for song in all_songs[:100]:
+        for song in sorted_all_songs[:100]:
             if not song.in_playlist:
                 song.in_playlist = True
                 self.songs.set(song)
@@ -305,9 +318,17 @@ class Top100Collection(SongCollection):
     def get_old_songs(self) -> List[Song]:
         logger.info("get old songs for 'top 100'")
 
-        all_songs = self._get_all_songs()
         old_songs = []
-        for song in all_songs[100:]:
+        # remove songs which are not played anymore
+        all_songs = self.songs.get_all()
+        for song in all_songs:
+            if song.in_playlist and self._is_past_deadline(song):
+                self.songs.remove(song)
+                old_songs.append(song)
+
+        # remove songs beyond top 100
+        sorted_all_songs = self._get_sorted_all_songs()
+        for song in sorted_all_songs[100:]:
             if song.in_playlist:
                 song.in_playlist = False
                 self.songs.set(song)
