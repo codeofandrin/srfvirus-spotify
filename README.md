@@ -37,7 +37,7 @@ as well.
 
 ### SRF Virus: Night Out
 This playlist consists of current songs that are played on the SRF Virus radio channel during the 
-"Night Out" program. The "Night Out" songs are played on Saturday between 08:00 and 23:59 p.m (CET).
+"Night Out" program. The "Night Out" songs are played on Saturday between 20:00 and 23:59 (CET).
 
 The application adds songs to the playlist that are played at least once within three weeks.
 If a song is not played at least once in during the next three weeks, it will be removed from the playlist.
