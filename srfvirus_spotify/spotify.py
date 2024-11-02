@@ -75,6 +75,9 @@ class SpotifyPlaylist:
         self.id: str = id
         self.name: str = name
 
+    def __repr__(self) -> str:
+        return f"<SpotifyPlaylist id={self.id} name={self.name}>"
+
     def add_songs(self, songs: List[Song]) -> None:
         items = []
         for song in songs:
