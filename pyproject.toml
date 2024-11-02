@@ -4,6 +4,7 @@ skip-string-normalization = true
 
 [tool.pyright]
 include = [
+    "main.py",
     "srfvirus_spotify",
 ]
 exclude = [
