@@ -276,7 +276,14 @@ class Top100Collection(SongCollection):
         )
 
     def _get_all_songs(self) -> List[Song]:
-        return list(reversed(sorted(self.songs.get_all(), key=lambda x: x.count)))
+        songs = self.songs.get_all()
+        # sort by ...
+        # 1. count, high to low
+        # 2. played_at, low to high
+        songs = sorted(songs, key=lambda x: x.played_at)
+        songs = sorted(songs, key=lambda x: x.count, reverse=True)
+
+        return songs
 
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'top 100'")
