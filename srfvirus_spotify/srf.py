@@ -192,7 +192,7 @@ class SongCollection:
         self.playlist = SpotifyPlaylist(client=self._srf.spotify.client, id=playlist_id, name=name)
         self.songs: SongsStorageFileHandler = SongsStorageFileHandler(f"./storage/songs_{name}.json")
 
-    def _get_songs(self) -> List[Song]:
+    def _get_current_songs(self) -> List[Song]:
         songs = []
         for current_song in self._srf.current_songs:
             # check if song is already stored
@@ -232,7 +232,7 @@ class TrendingNowCollection(SongCollection):
         logger.info("get new songs for 'trending now'")
 
         new_songs = []
-        for song in self._get_songs():
+        for song in self._get_current_songs():
             # check retention to potentially prevent adding song
             # that is not played enough
             if self._is_past_deadline(song):
@@ -294,7 +294,7 @@ class Top100Collection(SongCollection):
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'top 100'")
 
-        for song in self._get_songs():
+        for song in self._get_current_songs():
             # check retention to potentially prevent adding song
             # that is not played enough
             if self._is_past_deadline(song):
@@ -362,7 +362,7 @@ class NightOutCollection(SongCollection):
 
         new_songs = []
         if self._is_night_out():
-            for song in self._get_songs():
+            for song in self._get_current_songs():
                 tz = ZoneInfo("Europe/Zurich")
                 played_at = datetime.datetime.fromtimestamp(song.played_at).astimezone(tz)
                 if played_at.hour >= 20:
