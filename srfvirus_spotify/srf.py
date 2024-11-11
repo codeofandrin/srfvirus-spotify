@@ -354,28 +354,25 @@ class NightOutCollection(SongCollection):
         now = int(time.time())
         return now >= (song.retained_at + self.SONG_DEADLINE)
 
-    def _is_night_out(self) -> bool:
+    def _is_night_out_song(self, song: Song) -> bool:
         tz = ZoneInfo("Europe/Zurich")
-        now = datetime.datetime.now(tz)
-        return now.isoweekday() == 6 and now.hour >= 20
+        played_at = datetime.datetime.fromtimestamp(song.played_at).astimezone(tz)
+        return played_at.isoweekday() == 6 and played_at.hour >= 20
 
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'night out'")
 
         new_songs = []
-        if self._is_night_out():
-            for song in self._get_current_songs():
-                tz = ZoneInfo("Europe/Zurich")
-                played_at = datetime.datetime.fromtimestamp(song.played_at).astimezone(tz)
-                if played_at.hour >= 20:
-                    # retain to prevent song being removed later
-                    song.retain()
-                    if not song.in_playlist:
-                        song.in_playlist = True
-                        new_songs.append(song)
+        for song in self._get_current_songs():
+            if self._is_night_out_song(song):
+                # retain to prevent song being removed later
+                song.retain()
+                if not song.in_playlist:
+                    song.in_playlist = True
+                    new_songs.append(song)
 
-                    # always update it in storage to update at least played_at timestamp
-                    self.songs.set(song)
+                # always update it in storage to update at least played_at timestamp
+                self.songs.set(song)
 
         return new_songs
 
