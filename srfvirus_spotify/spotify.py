@@ -52,7 +52,8 @@ class Spotify:
                 redirect_uri="http://example.com",
                 scope=self.SCOPES,
                 cache_handler=TokenCacheFileHandler("./.cache/.spotify_token"),
-            )
+            ),
+            requests_timeout=10
         )
 
     def search_title(self, *, title: str, artist: str) -> Optional[str]:
