@@ -106,9 +106,8 @@ class _SRFClient:
         expires_at = token_info["expires_at"]
         now = int(time.time())
 
-        # use an offset of 1 hour as a buffer
-        # the token is valid for 7 days, so this shouldn't be a problem
-        if now >= (expires_at + 3600):
+        # use an offset of 1 minute as a buffer
+        if now >= (expires_at - 60):
             token_info = self._request_token()
             self._save_token_info(token_info)
             self.__token = self._get_token()
