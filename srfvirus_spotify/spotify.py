@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2024 codeofandrin
+Copyright (c) 2025 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ class Spotify:
                 scope=self.SCOPES,
                 cache_handler=TokenCacheFileHandler("./.cache/.spotify_token"),
             ),
-            requests_timeout=10
+            requests_timeout=10,
         )
 
     def search_title(self, *, title: str, artist: str) -> Optional[str]:

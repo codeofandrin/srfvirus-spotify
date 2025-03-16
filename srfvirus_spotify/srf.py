@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2024 codeofandrin
+Copyright (c) 2025 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -270,7 +270,7 @@ class TrendingNowCollection(SongCollection):
 
 class Top100Collection(SongCollection):
 
-    SONG_DEADLINE = int(datetime.timedelta(weeks=2).total_seconds())
+    SONG_DEADLINE = int(datetime.timedelta(weeks=4).total_seconds())
 
     def __init__(self, *, srf: SRF):
         super().__init__(
