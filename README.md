@@ -6,7 +6,7 @@
     </div>
     <h1 align="center">SRF Virus – Spotify</h1>
     <p align="center">
-        An application that automatically maintains multiple SRF Virus playlists on Spotify.
+        A script that automatically maintains multiple SRF Virus playlists on Spotify.
     </p>
 </p>
 
