@@ -216,7 +216,7 @@ class SongCollection:
 
 class TrendingNowCollection(SongCollection):
 
-    REQUIRED_SONG_COUNT = 3
+    REQUIRED_SONG_COUNT = 2
     SONG_DEADLINE = int(datetime.timedelta(weeks=1).total_seconds())
 
     def __init__(self, *, srf: SRF):
