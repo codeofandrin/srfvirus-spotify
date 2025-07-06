@@ -1,8 +1,8 @@
 <p align="center">
     <div align="center">
-        <img src="assets/srfvirus_icon.png" height="70px">
+        <img src="assets/srfvirus_icon.png" width="70px">
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img src="assets/spotify_icon.png" height="70px">
+        <img src="assets/spotify_icon.png" width="70px">
     </div>
     <h1 align="center">SRF Virus – Spotify</h1>
     <p align="center">
