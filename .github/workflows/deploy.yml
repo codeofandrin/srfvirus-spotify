@@ -1,19 +1,15 @@
 name: Deploy
 
-# TODO: change
-# on:
-#   # only on tags which follow semantic versioning
-#   push:
-#     tags:
-#       - "v[0-9]+.[0-9]+.[0-9]+"
 on:
+  # only on tags which follow semantic versioning
   push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # TODO: change project path and service
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -22,7 +18,7 @@ jobs:
           key: ${{secrets.SSH_PRIVATE_KEY}}
           port: ${{secrets.SSH_PORT}}
           script: |
-            cd ~/GitHub/temp/srfvirus-spotify
+            cd ~/GitHub/srfvirus-spotify
             git fetch --all
             git pull
-            sudo systemctl restart temp-srfvirus-spotify.service
+            sudo systemctl restart srfvirus-spotify.service
