@@ -1,4 +1,11 @@
 name: Deploy
+env:
+  SSH_HOST: ${{secrets.SSH_HOST}}
+  SSH_PORT: ${{secrets.SSH_PORT}}
+  SSH_USER: ${{secrets.SSH_USER}}
+  SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+  SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+  SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
 # TODO: change
 # on:
@@ -20,13 +27,6 @@ jobs:
           sudo chmod 600 ../private.key
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
         shell: bash
-        env:
-          SSH_HOST: ${{secrets.SSH_HOST}}
-          SSH_PORT: ${{secrets.SSH_PORT}}
-          SSH_USER: ${{secrets.SSH_USER}}
-          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
-          SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
-          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
       # TODO: change project path and service
       - name: Deploy via SSH
