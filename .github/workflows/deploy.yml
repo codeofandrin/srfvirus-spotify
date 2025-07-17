@@ -31,7 +31,7 @@ jobs:
       # TODO: change project path and service
       - name: Deploy via SSH
         run: |
-          ssh -i $SSH_KEY_PATH $SSH_USER@$SSH_HOST -p $SSH_PORT << 'EOF'
+          ssh -tt -i $SSH_KEY_PATH $SSH_USER@$SSH_HOST -p $SSH_PORT << 'EOF'
             cd ~/GitHub/temp/srfvirus-spotify
             git fetch --all
             git pull origin main
