@@ -37,4 +37,4 @@ jobs:
             git pull origin main
             systemctl restart temp-srfvirus-spotify.service
           EOF
-
+        shell: bash
