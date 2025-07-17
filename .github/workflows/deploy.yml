@@ -4,8 +4,6 @@ env:
   SSH_PORT: ${{secrets.SSH_PORT}}
   SSH_USER: ${{secrets.SSH_USER}}
   SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
-  SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
-  SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
 # TODO: change
 # on:
@@ -20,20 +18,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Create SSH key
-        run: |
-          mkdir -p ~/.ssh/
-          echo "$SSH_PRIVATE_KEY" > ../private.key
-          sudo chmod 600 ../private.key
-          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-        shell: bash
-
       # TODO: change project path and service
       - name: Deploy via SSH
-        run: |
-          ssh -tt -i $SSH_KEY_PATH $SSH_USER@$SSH_HOST -p $SSH_PORT << 'EOF'
-          cd ~/GitHub/temp/srfvirus-spotify
-          git fetch --all
-          git pull origin main && sudo systemctl restart temp-srfvirus-spotify.service
-          EOF
-        shell: bash
+        uses: appleboy/ssh-action@v1
+        with:
+          host: $SSH_HOST
+          username: $SSH_USER
+          key: $SSH_PRIVATE_KEY
+          port: $SSH_PORT
+          script: |
+            cd ~/GitHub/temp/srfvirus-spotify
+            git fetch --all
+            git pull origin main 
+            sudo systemctl restart temp-srfvirus-spotify.service
