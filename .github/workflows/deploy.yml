@@ -24,7 +24,7 @@ jobs:
           script: |
             cd ~/GitHub/temp/srfvirus-spotify
             git fetch --all
-            git pull origin main
+            git pull
             sudo systemctl restart temp-srfvirus-spotify.service
 
 # test
