@@ -1,9 +1,4 @@
 name: Deploy
-env:
-  SSH_HOST: ${{secrets.SSH_HOST}}
-  SSH_PORT: ${{secrets.SSH_PORT}}
-  SSH_USER: ${{secrets.SSH_USER}}
-  SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
 
 # TODO: change
 # on:
@@ -22,10 +17,10 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: $SSH_HOST
-          username: $SSH_USER
-          key: $SSH_PRIVATE_KEY
-          port: $SSH_PORT
+          host: ${{secrets.SSH_HOST}}
+          username: ${{secrets.SSH_USER}}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          port: ${{secrets.SSH_PORT}}
           script: |
             cd ~/GitHub/temp/srfvirus-spotify
             git fetch --all
