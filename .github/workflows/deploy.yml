@@ -1,0 +1,24 @@
+name: Deploy
+
+on:
+  # only on tags which follow semantic versioning
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{secrets.SSH_HOST}}
+          username: ${{secrets.SSH_USER}}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          port: ${{secrets.SSH_PORT}}
+          script: |
+            cd ~/GitHub/srfvirus-spotify
+            git fetch --all
+            git pull
+            sudo systemctl restart srfvirus-spotify.service
