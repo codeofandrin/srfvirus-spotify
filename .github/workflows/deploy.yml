@@ -35,6 +35,6 @@ jobs:
             cd ~/GitHub/temp/srfvirus-spotify
             git fetch --all
             git pull origin main
-            systemctl restart temp-srfvirus-spotify.service
+            sudo systemctl restart temp-srfvirus-spotify.service
           EOF
         shell: bash
