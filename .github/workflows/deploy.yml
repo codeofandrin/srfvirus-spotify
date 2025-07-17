@@ -34,7 +34,6 @@ jobs:
           ssh -tt -i $SSH_KEY_PATH $SSH_USER@$SSH_HOST -p $SSH_PORT << 'EOF'
           cd ~/GitHub/temp/srfvirus-spotify
           git fetch --all
-          git pull origin main
-          sudo systemctl restart temp-srfvirus-spotify.service
+          git pull origin main && sudo systemctl restart temp-srfvirus-spotify.service
           EOF
         shell: bash
