@@ -26,5 +26,3 @@ jobs:
             git fetch --all
             git pull
             sudo systemctl restart temp-srfvirus-spotify.service
-
-# test
