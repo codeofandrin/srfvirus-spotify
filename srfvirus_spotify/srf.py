@@ -283,9 +283,8 @@ class Top100Collection(SongCollection):
         songs = self.songs.get_all()
         # sort by ...
         # 1. count, high to low
-        # 2. played_at, low to high
-        songs = sorted(songs, key=lambda x: x.played_at)
-        songs = sorted(songs, key=lambda x: x.count, reverse=True)
+        # 2. played_at, young (high) to old (low)
+        songs = sorted(songs, key=lambda x: (x.count, x.played_at), reverse=True)
 
         return songs
 
