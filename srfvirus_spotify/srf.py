@@ -270,7 +270,7 @@ class TrendingNowCollection(SongCollection):
 
 class Top100Collection(SongCollection):
 
-    SONG_DEADLINE = int(datetime.timedelta(weeks=4).total_seconds())
+    SONG_DEADLINE = int(datetime.timedelta(weeks=2).total_seconds())
 
     def __init__(self, *, srf: SRF):
         super().__init__(
