@@ -55,6 +55,10 @@ The application follows these steps:
 4. Add songs if they meet the criteria for the respective playlist
 5. Remove songs that don't meet the criteria anymore
 
+## Tech Stack
+- Python 3.9+
+- spotipy (API Wrapper for the Spotify Web API)
+
 ## Additional Links
 
 - [SRGSSR Audio API Docs](https://developer.srgssr.ch/api-catalog/srgssr-audio-0)
@@ -65,3 +69,10 @@ The application follows these steps:
 This application is not affiliated with SRG SSR or Spotify and is not an official 
 application of one of these companies. The application was developed independently and uses 
 publicly available data in accordance with its terms of use.
+
+## Copyright
+
+Copyright (c) codeofandrin 
+
+This source code is licensed under the MIT license found in the
+[LICENSE](LICENSE) file in the root directory of this source tree.
