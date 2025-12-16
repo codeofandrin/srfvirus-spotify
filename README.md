@@ -61,7 +61,7 @@ The application follows these steps:
 
 ## Additional Links
 
-- [SRGSSR Audio API Docs](https://developer.srgssr.ch/api-catalog/srgssr-audio-0)
+- [SRGSSR Audio API Docs](https://developer.srgssr.ch/en/apis/srgssr-audio)
 - [Spotify Web API Docs](https://developer.spotify.com/documentation/web-api)
 
 ## Disclaimer
