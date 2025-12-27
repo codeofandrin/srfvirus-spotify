@@ -32,7 +32,7 @@ This playlist consists of current top 100 most played songs on the SRF Virus rad
 
 The application increments the count of a song every time it's played. Then it sorts the songs by count
 and those in the top 100 that aren't in the playlist yet are added. Every song beyond the top 100
-is removed, if it's in the playlist. Also, if a song is not played anymore within two weeks, it's removed
+is removed, if it's in the playlist. Also, if a song is not played anymore within 10 days, it's removed
 as well.
 
 ### SRF Virus: Night Out
