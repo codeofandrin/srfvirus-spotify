@@ -1,4 +1,4 @@
 python-dotenv
-spotipy
+spotipy~=2.26.0
 apscheduler
 sentry-sdk
