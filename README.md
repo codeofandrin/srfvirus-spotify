@@ -22,38 +22,35 @@ There are following playlists this application maintains:
 Read more below.
 
 ### SRF Virus: Trending Now
-This playlist consists of current trending songs that are played on the SRF Virus radio channel. 
+This playlist contains currently trending songs played on the SRF Virus radio channel.
 
-The application adds songs to the playlist that are played at least three times within a week. 
-If a song is not played at least three times during the following week, it will be removed from the playlist.
+The application adds songs to the playlist once they have been played at least three times within one week.
+If a song is not played at least three times during the following week, it is removed from the playlist.
 
 ### SRF Virus: Top 100
-This playlist consists of current top 100 most played songs on the SRF Virus radio channel.
+This playlist contains the current top 100 most-played songs on the SRF Virus radio channel.
 
-The application increments the count of a song every time it's played. Then it sorts the songs by count
-and those in the top 100 that aren't in the playlist yet are added. Every song beyond the top 100
-is removed, if it's in the playlist. Also, if a song is not played anymore within 10 days, it's removed
-as well.
+The application increments a song’s play count each time it is played. The songs are then sorted by play count.
+Songs that enter the top 100 and are not yet in the playlist are added. Songs that fall below the top 100 are removed from the playlist.
+Additionally, if a song has not been played for 10 days, it is removed as well.
 
 ### SRF Virus: Night Out
-This playlist consists of current songs that are played on the SRF Virus radio channel during the 
-"Night Out" program. The "Night Out" songs are played on Saturday between 20:00 and 23:59 (CET).
+This playlist contains songs played on the SRF Virus radio channel during the “Night Out” program.
+The program airs on Saturdays between 20:00 and 23:59 (CET).
 
-The application adds songs to the playlist that are played at least once within three weeks.
-If a song is not played at least once during the next three weeks, it will be removed from the playlist.
+The application adds songs to the playlist once they have been played at least once within three weeks.
+If a song is not played again within the following three weeks, it is removed from the playlist.
 
 ## Application Flow
 
-The application is scheduled to run every 15min and uses the SRGSSR Audio API to retrieve played songs
-on the SRF Virus radio channel as well as the Spotify Web API to maintain the playlist itself.
+The application runs every 15 minutes. It uses the SRGSSR Audio API to retrieve songs played on the SRF Virus radio channel and the Spotify Web API to manage the playlists.
 
-The application follows these steps:
-
-1. Get songs from the SRGSSR Audio API
-2. Filter out songs received from the SRGSSR Audio API that are redundant from the last request
-3. Search filtered songs on Spotify to get URI (song identifier)
-4. Add songs if they meet the criteria for the respective playlist
-5. Remove songs that don't meet the criteria anymore
+The application performs the following steps:
+	1.	Retrieve songs from the SRGSSR Audio API
+	2.	Filter out songs that are redundant from the previous request
+	3.	Search the remaining songs on Spotify to obtain the URI (song identifier)
+	4.	Add songs that meet the criteria for the respective playlist
+	5.	Remove songs that no longer meet the criteria
 
 ## Tech Stack
 - Python 3.9+
