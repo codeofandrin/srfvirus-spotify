@@ -1,4 +1,4 @@
-python-dotenv
-spotipy~=2.26.0
-apscheduler
-sentry-sdk
+python-dotenv>=1.1,<2.0
+spotipy>=2.26,<3.0
+apscheduler>=3.11,<4.0
+sentry-sdk>=2.33,<3.0
