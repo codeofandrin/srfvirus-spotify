@@ -49,7 +49,7 @@ class Spotify:
             auth_manager=SpotifyOAuth(
                 client_id=Env.SPOTIFY_CLIENT_ID,
                 client_secret=Env.SPOTIFY_CLIENT_SECRET,
-                redirect_uri="http://example.com",
+                redirect_uri="https://example.com",
                 scope=self.SCOPES,
                 cache_handler=TokenCacheFileHandler("./.cache/.spotify_token"),
             ),
