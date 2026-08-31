@@ -62,8 +62,9 @@ class Spotify:
         search_results = self.client.search(q)
 
         track_uri = None
-        if search_results:
-            track = search_results["tracks"]["items"][0]
+        items = (search_results or {}).get("tracks", {}).get("items", [])
+        if items:
+            track = items[0]
             track_uri = track["uri"]
 
         return track_uri
