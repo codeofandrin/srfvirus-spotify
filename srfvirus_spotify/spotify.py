@@ -39,6 +39,19 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+_COUNTRY_TAG_RE = re.compile(r"\s*\([A-Za-z]{2}\)")
+_FEAT_RE = re.compile(r"\s+(?:feat\.?|ft\.?|featuring)\s+.*$", flags=re.IGNORECASE)
+_PRIMARY_SPLIT_RE = re.compile(r"\s*[/,]\s*")
+
+
+def _clean_artist(artist: str) -> str:
+    return _COUNTRY_TAG_RE.sub("", artist).strip()
+
+
+def _primary_artist(artist: str) -> str:
+    artist = _FEAT_RE.sub("", _clean_artist(artist))
+    return _PRIMARY_SPLIT_RE.split(artist)[0].strip()
+
 
 class Spotify:
 
@@ -57,17 +70,30 @@ class Spotify:
         )
 
     def search_title(self, *, title: str, artist: str) -> Optional[str]:
-        artist = re.sub("feat.", ",", artist, flags=re.IGNORECASE)
-        q = f"{title} {artist}"
-        search_results = self.client.search(q)
+        title = title.replace('"', " ").strip()
+        primary_artist = _primary_artist(artist).replace('"', " ").strip()
 
-        track_uri = None
-        items = (search_results or {}).get("tracks", {}).get("items", [])
-        if items:
-            track = items[0]
-            track_uri = track["uri"]
+        # Search in 3 stages:
+        #   1. Precise matching with filters ("track:<track> artist:<primary artist>")
+        #   2. Free text fallbacks ("<track> <primary artist>")
+        #   3. Full text search (only "(CH)" stripped)
+        queries = [
+            f'track:"{title}" artist:"{primary_artist}"',
+            f"{title} {primary_artist}",
+            f"{title} {_clean_artist(artist)}",
+        ]
 
-        return track_uri
+        for q in queries:
+            items = self._search_items(q)
+            if items:
+                return items[0]["uri"]
+
+        logger.info(f"no spotify match for {title!r} by {artist!r}")
+        return None
+
+    def _search_items(self, q: str) -> List[dict]:
+        search_results = self.client.search(q, limit=1)
+        return ((search_results or {}).get("tracks") or {}).get("items") or []
 
 
 class SpotifyPlaylist:
