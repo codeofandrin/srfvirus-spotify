@@ -37,3 +37,7 @@ class SRFHTTPException(BaseException):
         self.reason: Optional[str] = self.response.reason
         self.data: Dict[str, Any] = data
         super().__init__(f"{self.data}")
+
+
+class SpotifySearchUnavailable(Exception):
+    """Spotify search is temporarily unavailable (rate limit / 5xx, retries exhausted)."""

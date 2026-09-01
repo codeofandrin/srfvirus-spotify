@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 
 from .env import Env
 from .cache_handler import TokenCacheFileHandler
-from .errors import SRFHTTPException
+from .errors import SRFHTTPException, SpotifySearchUnavailable
 from .storage_handler import SongsStorageFileHandler, SongsMetadataFileHandler
 from .song import Song
 from .spotify import SpotifyPlaylist, Spotify
@@ -159,16 +159,27 @@ class SRF:
         data = self.client.fetch_song_list(SRF_VIRUS_CHANNEL_ID)
         last_timestamp = self.metadata.get("last_timestamp")
 
-        songs = []
+        # collect everything newer than the last processes song
+        new_raw_songs = []
         for raw_song in data:
-            # check timestamp first to not search songs that are
-            # redundant from last request (and therefore not needed)
             dt = datetime.datetime.fromisoformat(raw_song["date"])
             played_at = int(dt.timestamp())
             if played_at == last_timestamp:
                 break
+            new_raw_songs.append((played_at, raw_song))
 
-            uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+        # process oldest-first and move last_timestamp per song, so a mid-way
+        # Spotify outage keeps its progress and the next run resumes at the failed song
+        songs = []
+        newest_processed = None
+        for played_at, raw_song in reversed(new_raw_songs):
+            try:
+                uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+            except SpotifySearchUnavailable as e:
+                logger.warning(f"spotify search unavailable ({e}); resuming here on next run")
+                break
+
+            newest_processed = played_at
             if uri is not None:
                 song = Song(
                     uri=uri,
@@ -180,8 +191,8 @@ class SRF:
 
             time.sleep(1)
 
-        if songs:
-            self.metadata.set("last_timestamp", songs[0].played_at)
+        if newest_processed is not None:
+            self.metadata.set("last_timestamp", newest_processed)
 
         return songs
 

@@ -26,12 +26,15 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from typing import TYPE_CHECKING, Optional, List
 
 from spotipy import Spotify as SpotifyClient, SpotifyOAuth
+from spotipy.exceptions import SpotifyException
 
 from .env import Env
 from .cache_handler import TokenCacheFileHandler
+from .errors import SpotifySearchUnavailable
 
 if TYPE_CHECKING:
     from .song import Song
@@ -70,7 +73,7 @@ class Spotify:
         )
 
     def search_title(self, *, title: str, artist: str) -> Optional[str]:
-        title = title.replace('"', " ").strip()
+        clean_title = title.replace('"', " ").strip()
         primary_artist = _primary_artist(artist).replace('"', " ").strip()
 
         # Search in 3 stages:
@@ -78,15 +81,20 @@ class Spotify:
         #   2. Free text fallbacks ("<track> <primary artist>")
         #   3. Full text search (only "(CH)" stripped)
         queries = [
-            f'track:"{title}" artist:"{primary_artist}"',
-            f"{title} {primary_artist}",
-            f"{title} {_clean_artist(artist)}",
+            f'track:"{clean_title}" artist:"{primary_artist}"',
+            f"{clean_title} {primary_artist}",
+            f"{clean_title} {_clean_artist(artist)}",
         ]
 
-        for q in queries:
-            items = self._search_items(q)
+        for i, q in enumerate(queries):
+            try:
+                items = self._search_items(q)
+            except SpotifyException as e:
+                raise SpotifySearchUnavailable(str(e)) from e
             if items:
                 return items[0]["uri"]
+
+            time.sleep(1)
 
         logger.info(f"no spotify match for {title!r} by {artist!r}")
         return None
