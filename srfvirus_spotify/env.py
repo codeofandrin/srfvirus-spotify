@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2025 codeofandrin
+Copyright (c) 2026 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,3 +40,16 @@ class Env:
     SRF_CLIENT_ID: str = os.getenv("SRF_CLIENT_ID")  # type: ignore
     SRF_CLIENT_SECRET: str = os.getenv("SRF_CLIENT_SECRET")  # type: ignore
     SENTRY_DSN: str = os.getenv("SENTRY_DSN")  # type: ignore
+
+    SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI", "https://example.com")
+    # Public base URL of the intermediate reauth page; the mail links here instead of the raw Spotify URL.
+    REAUTH_PAGE_BASE_URL: str = os.getenv("REAUTH_PAGE_BASE_URL", "https://example.com").rstrip("/")
+    REAUTH_PORT: int = int(os.getenv("REAUTH_PORT", "8888"))
+    REAUTH_WINDOW_HOURS: int = int(os.getenv("REAUTH_WINDOW_HOURS", "24"))
+    REAUTH_MAIL_INTERVAL_HOURS: int = int(os.getenv("REAUTH_MAIL_INTERVAL_HOURS", "24"))
+    REAUTH_REMINDER_DAYS: int = int(os.getenv("REAUTH_REMINDER_DAYS", "150"))
+    CLOUDFLARE_TUNNEL_TOKEN: str = os.getenv("CLOUDFLARE_TUNNEL_TOKEN")  # type: ignore
+
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY")  # type: ignore
+    MAIL_FROM: str = os.getenv("MAIL_FROM")  # type: ignore
+    MAIL_TO: str = os.getenv("MAIL_TO")  # type: ignore

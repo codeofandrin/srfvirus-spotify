@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2025 codeofandrin
+Copyright (c) 2026 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@ SOFTWARE.
 
 import logging
 import datetime
-import os
 import time
 
 import sentry_sdk as sentry
@@ -32,28 +31,29 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from srfvirus_spotify.srf import SRF, TrendingNowCollection, Top100Collection, NightOutCollection
 from srfvirus_spotify.env import Env
+from srfvirus_spotify.log import setup_logging
+from srfvirus_spotify import reauth_services
+from srfvirus_spotify.reauth import ensure_token_valid, remind_if_expiry_near, reauth_window_active
+from srfvirus_spotify.errors import ReauthRequired
 
 
 logger = logging.getLogger(__name__)
 
 
+def sync_reauth_services() -> None:
+    """Tunnel + callback server run exactly while a reauth link is outstanding."""
+    try:
+        if reauth_window_active():
+            reauth_services.start()
+        else:
+            reauth_services.stop()
+    except Exception:
+        logger.exception("failed to sync reauth services")
+
+
 def setup() -> None:
-    ignore_errors = [KeyboardInterrupt]
-    sentry.init(
-        dsn=Env.SENTRY_DSN,
-        ignore_errors=ignore_errors,
-    )
-
-    log_path = "./logs/logging.log"
-    if not os.path.exists(log_path):
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-
-    logging.basicConfig(
-        format="%(asctime)s %(name)s %(levelname)s %(message)s",
-        datefmt="%d.%m.%y %H:%M:%S %Z",
-        level=logging.INFO,
-        handlers=[logging.FileHandler(log_path), logging.StreamHandler()],
-    )
+    sentry.init(dsn=Env.SENTRY_DSN, ignore_errors=[KeyboardInterrupt])
+    setup_logging()
 
 
 scheduler = BlockingScheduler()
@@ -61,6 +61,20 @@ scheduler = BlockingScheduler()
 
 @scheduler.scheduled_job("interval", minutes=15, next_run_time=datetime.datetime.now())
 def main():
+    try:
+        ensure_token_valid()
+    except ReauthRequired as e:
+        logger.warning(f"skipping run, spotify reauth required: {e}")
+        sync_reauth_services()
+        return
+
+    try:
+        remind_if_expiry_near()
+    except Exception:
+        logger.exception("expiry reminder check failed")
+
+    sync_reauth_services()
+
     srf = SRF()
     trending_now = TrendingNowCollection(srf=srf)
     top_100 = Top100Collection(srf=srf)

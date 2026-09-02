@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2025 codeofandrin
+Copyright (c) 2026 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Iterable, Tuple
 
 from spotipy import CacheHandler
 
@@ -34,8 +34,10 @@ logger = logging.getLogger(__name__)
 
 
 class TokenCacheFileHandler(CacheHandler):
-    def __init__(self, cache_path: str):
+    def __init__(self, cache_path: str, preserve_keys: Iterable[str] = ()):
         self.json_file: JSONFile = JSONFile(cache_path)
+        # keys kept across spotipy's refresh writes (e.g. authorized_at)
+        self.preserve_keys: Tuple[str, ...] = tuple(preserve_keys)
 
     def get_cached_token(self) -> Dict[str, Any]:
         token_info = self.json_file.read()
@@ -45,4 +47,9 @@ class TokenCacheFileHandler(CacheHandler):
         return token_info
 
     def save_token_to_cache(self, token_info: Dict[str, Any]) -> None:
+        if self.preserve_keys:
+            existing = self.json_file.read() or {}
+            kept = {k: existing[k] for k in self.preserve_keys if k in existing}
+            token_info = {**kept, **token_info}
+
         self.json_file.write(token_info)

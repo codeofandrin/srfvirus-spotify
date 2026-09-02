@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2025 codeofandrin
+Copyright (c) 2026 codeofandrin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,10 @@ import re
 import time
 from typing import TYPE_CHECKING, Optional, List
 
-from spotipy import Spotify as SpotifyClient, SpotifyOAuth
+from spotipy import Spotify as SpotifyClient
 from spotipy.exceptions import SpotifyException
 
-from .env import Env
-from .cache_handler import TokenCacheFileHandler
+from .reauth import build_oauth
 from .errors import SpotifySearchUnavailable
 
 if TYPE_CHECKING:
@@ -58,19 +57,8 @@ def _primary_artist(artist: str) -> str:
 
 class Spotify:
 
-    SCOPES = "playlist-read-private,playlist-modify-private,playlist-modify-public"
-
     def __init__(self):
-        self.client = SpotifyClient(
-            auth_manager=SpotifyOAuth(
-                client_id=Env.SPOTIFY_CLIENT_ID,
-                client_secret=Env.SPOTIFY_CLIENT_SECRET,
-                redirect_uri="https://example.com",
-                scope=self.SCOPES,
-                cache_handler=TokenCacheFileHandler("./.cache/.spotify_token"),
-            ),
-            requests_timeout=10,
-        )
+        self.client = SpotifyClient(auth_manager=build_oauth(), requests_timeout=10)
 
     def search_title(self, *, title: str, artist: str) -> Optional[str]:
         clean_title = title.replace('"', " ").strip()

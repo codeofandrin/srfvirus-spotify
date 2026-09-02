@@ -24,3 +24,4 @@ jobs:
             source venv/bin/activate
             pip install -U -r requirements.txt
             sudo systemctl restart srfvirus-spotify.service
+            sudo systemctl restart srfvirus-reauth-server.service

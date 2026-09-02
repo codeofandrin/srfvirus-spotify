@@ -22,26 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Optional, Dict, Any
-
-if TYPE_CHECKING:
-    from requests import Response
+import os
+import logging
 
 
-class SRFHTTPException(BaseException):
-
-    def __init__(self, response: Response, data: Dict[str, Any]):
-        self.response: Response = response
-        self.reason: Optional[str] = self.response.reason
-        self.data: Dict[str, Any] = data
-        super().__init__(f"{self.data}")
-
-
-class SpotifySearchUnavailable(Exception):
-    """Spotify search is temporarily unavailable (rate limit / 5xx, retries exhausted)."""
-
-
-class ReauthRequired(Exception):
-    """The Spotify refresh token is gone or rejected, user must re-authorize."""
+def setup_logging() -> None:
+    log_path = "./logs/logging.log"
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    logging.basicConfig(
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+        datefmt="%d.%m.%y %H:%M:%S %Z",
+        level=logging.INFO,
+        handlers=[logging.FileHandler(log_path), logging.StreamHandler()],
+    )

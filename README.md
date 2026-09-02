@@ -52,9 +52,30 @@ The application performs the following steps:
 	4.	Add songs that meet the criteria for the respective playlist
 	5.	Remove songs that no longer meet the criteria
 
+## Reauthorization
+
+Spotify refresh tokens expire 6 months after the original user authorization (enforced for existing apps since 20 July 2026). 
+On expiry the token endpoint returns `400 invalid_grant` and the user must sign in again. The reauth flow sends an email
+with a link to re-authorize and refresh the token.
+
+### One-time setup
+
+1. **Cloudflare Zero Trust**: create a tunnel, add a public hostname `<optional-subdomain>.<your-domain>` and point 
+to `http://localhost:8888`. Cloudlfare creates the DNS record automatically. Copy the tunnel token.
+2. **Spotify Developer Dashboard**: add redirect URI
+`https://<your-domain>/callback`.
+3. **Resend**: verify the sender domain and create an API key.
+4. **Server `.env`**: Set env variables (see `.env.example`)
+5. **Install cloudflared**: See Cloudflare documentation / walk-through. However **do not** run `cloudflared service install`.
+`reauth_services.py` starts it token-based only when a reauth is pending.
+7. On the first tick `remind_if_expiry_near()` finds no `authorized_at` and sends
+   the first reauth mail. Everything runs automatically after that.
+
 ## Tech Stack
 - Python 3.9+
 - spotipy (API Wrapper for the Spotify Web API)
+- cloudflared (on-demand tunnel for reauth server)
+- Resend (reminder mails)
 
 ## Additional Links
 

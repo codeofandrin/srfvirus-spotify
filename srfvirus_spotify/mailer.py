@@ -22,26 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from __future__ import annotations
+import logging
 
-from typing import TYPE_CHECKING, Optional, Dict, Any
+import requests
 
-if TYPE_CHECKING:
-    from requests import Response
-
-
-class SRFHTTPException(BaseException):
-
-    def __init__(self, response: Response, data: Dict[str, Any]):
-        self.response: Response = response
-        self.reason: Optional[str] = self.response.reason
-        self.data: Dict[str, Any] = data
-        super().__init__(f"{self.data}")
+from .env import Env
 
 
-class SpotifySearchUnavailable(Exception):
-    """Spotify search is temporarily unavailable (rate limit / 5xx, retries exhausted)."""
+logger = logging.getLogger(__name__)
+
+RESEND_URL = "https://api.resend.com/emails"
 
 
-class ReauthRequired(Exception):
-    """The Spotify refresh token is gone or rejected, user must re-authorize."""
+def send_mail(subject: str, text: str) -> None:
+    response = requests.post(
+        RESEND_URL,
+        headers={"Authorization": f"Bearer {Env.RESEND_API_KEY}"},
+        json={"from": Env.MAIL_FROM, "to": [Env.MAIL_TO], "subject": subject, "text": text},
+        timeout=10,
+    )
+    if response.status_code >= 300:
+        logger.error(f"resend failed: {response.status_code} {response.text}")
+        response.raise_for_status()
+
+    logger.info(f"sent mail {subject!r} to {Env.MAIL_TO}")
