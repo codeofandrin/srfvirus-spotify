@@ -37,7 +37,7 @@ from .env import Env
 from .cache_handler import TokenCacheFileHandler
 from .errors import SRFHTTPException, SpotifySearchUnavailable
 from .storage_handler import SongsStorageFileHandler, SongsMetadataFileHandler
-from .song import Song
+from .song import Song, SongDuplicateChecker
 from .spotify import SpotifyPlaylist, Spotify
 
 
@@ -174,18 +174,19 @@ class SRF:
         newest_processed = None
         for played_at, raw_song in reversed(new_raw_songs):
             try:
-                uri = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
+                result = self.spotify.search_title(title=raw_song["title"], artist=raw_song["artist"]["name"])
             except SpotifySearchUnavailable as e:
                 logger.warning(f"spotify search unavailable ({e}); resuming here on next run")
                 break
 
             newest_processed = played_at
-            if uri is not None:
+            if result is not None:
                 song = Song(
-                    uri=uri,
+                    uri=result["uri"],
                     title=raw_song["title"],
                     artist=raw_song["artist"]["name"],
                     played_at=played_at,
+                    duration_ms=result["duration_ms"],
                 )
                 songs.append(song)
 
@@ -244,6 +245,8 @@ class TrendingNowCollection(SongCollection):
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'trending now'")
 
+        duplicate_checker = SongDuplicateChecker(s for s in self.songs.get_all() if s.in_playlist)
+
         new_songs = []
         for song in self._get_current_songs():
             # check retention to potentially prevent adding song
@@ -258,8 +261,12 @@ class TrendingNowCollection(SongCollection):
                 # retain to prevent song being removed later
                 song.retain()
                 if not song.in_playlist:
-                    song.in_playlist = True
-                    new_songs.append(song)
+                    if duplicate_checker.is_duplicate(song):
+                        logger.info(f"skip duplicate song {song!r}")
+                    else:
+                        song.in_playlist = True
+                        new_songs.append(song)
+                        duplicate_checker.add(song)
 
             # always update it in storage to update at least played_at timestamp
             self.songs.set(song)
@@ -317,13 +324,19 @@ class Top100Collection(SongCollection):
             song.retain()
             self.songs.set(song)
 
+        duplicate_checker = SongDuplicateChecker(s for s in self.songs.get_all() if s.in_playlist)
+
         sorted_all_songs = self._get_sorted_all_songs()
         new_songs = []
         for song in sorted_all_songs[:100]:
             if not song.in_playlist:
+                if duplicate_checker.is_duplicate(song):
+                    logger.info(f"skip duplicate song {song!r}")
+                    continue
                 song.in_playlist = True
                 self.songs.set(song)
                 new_songs.append(song)
+                duplicate_checker.add(song)
 
         return new_songs
 
@@ -372,14 +385,20 @@ class NightOutCollection(SongCollection):
     def get_new_songs(self) -> List[Song]:
         logger.info("get new songs for 'night out'")
 
+        duplicate_checker = SongDuplicateChecker(s for s in self.songs.get_all() if s.in_playlist)
+
         new_songs = []
         for song in self._get_current_songs():
             if self._is_night_out_song(song):
                 # retain to prevent song being removed later
                 song.retain()
                 if not song.in_playlist:
-                    song.in_playlist = True
-                    new_songs.append(song)
+                    if duplicate_checker.is_duplicate(song):
+                        logger.info(f"skip duplicate song {song!r}")
+                    else:
+                        song.in_playlist = True
+                        new_songs.append(song)
+                        duplicate_checker.add(song)
 
                 # always update it in storage to update at least played_at timestamp
                 self.songs.set(song)

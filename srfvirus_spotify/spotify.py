@@ -27,7 +27,7 @@ from __future__ import annotations
 import logging
 import re
 import time
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
 
 from spotipy import Spotify as SpotifyClient
 from spotipy.exceptions import SpotifyException
@@ -60,7 +60,7 @@ class Spotify:
     def __init__(self):
         self.client = SpotifyClient(auth_manager=build_oauth(), requests_timeout=10)
 
-    def search_title(self, *, title: str, artist: str) -> Optional[str]:
+    def search_title(self, *, title: str, artist: str) -> Optional[Dict[str, Any]]:
         clean_title = title.replace('"', " ").strip()
         primary_artist = _primary_artist(artist).replace('"', " ").strip()
 
@@ -80,7 +80,7 @@ class Spotify:
             except SpotifyException as e:
                 raise SpotifySearchUnavailable(str(e)) from e
             if items:
-                return items[0]["uri"]
+                return {"uri": items[0]["uri"], "duration_ms": items[0]["duration_ms"]}
 
             time.sleep(1)
 
